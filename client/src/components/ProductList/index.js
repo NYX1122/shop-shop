@@ -6,33 +6,32 @@ import ProductItem from '../ProductItem';
 import { QUERY_PRODUCTS } from '../../utils/queries';
 import spinner from '../../assets/spinner.gif';
 
-import { useStoreContext } from '../../utils/GlobalState';
-import { UPDATE_PRODUCTS } from '../../utils/actions';
+import { useDispatch, useSelector } from 'react-redux';
+import { UPDATE_PRODUCTS } from '../../utils/GlobalSlice';
 
 import { idbPromise } from '../../utils/helpers';
 
 function ProductList() {
-  const [state, dispatch] = useStoreContext();
+  const dispatch = useDispatch();
+  const state = useSelector(state => state.global);
   const { currentCategory } = state;
   
   const { loading, data } = useQuery(QUERY_PRODUCTS);
   
   useEffect(() => {
     if (data) {
-      dispatch({
-        type: UPDATE_PRODUCTS,
+      dispatch(UPDATE_PRODUCTS({
         products: data.products
-      });
+      }));
 
       data.products.forEach((product) => {
         idbPromise('products', 'put', product);
       });
     } else if (!loading) {
       idbPromise('products', 'get').then((products) => {
-        dispatch({
-          type: UPDATE_PRODUCTS,
+        dispatch(UPDATE_PRODUCTS({
           products: products
-        });
+        }));
       });
     }
   }, [data, dispatch]);
